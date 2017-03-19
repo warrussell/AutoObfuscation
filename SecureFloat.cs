@@ -14,19 +14,39 @@ namespace AutoObfuscation
 
         public SecureFloat(float f)
         {
-            value1 = f + (f / 2);
-            value2 = f / 2;
-            value3 = f * 2;
+            obfuscate(f);
+        }
+
+        private void obfuscate(float f)
+        {
+            this.value1 = f + (f / 2);
+            this.value2 = f / 2;
+            this.value3 = f * 2;
+        }
+
+        private float unobfuscate()
+        {
+            return 2 * (this.value1 + this.value2) - this.value3;
         }
 
         public static implicit operator float(SecureFloat sf)
         {
-            return 2 * (sf.value1 + sf.value2) - sf.value3;
+            return sf.unobfuscate();
         }
 
         public static implicit operator SecureFloat(float f)
         {
             return new SecureFloat(f);
+        }
+
+        public static implicit operator int(SecureFloat sf)
+        {
+            return (int)sf.unobfuscate();
+        }
+
+        public static implicit operator SecureFloat(int i)
+        {
+            return new SecureFloat(i);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace AutoObfuscation
             Console.ReadLine();
             var workspace = MSBuildWorkspace.Create();
 
+            bool secureFloatExists = false;
             var solution = workspace.OpenSolutionAsync(path).Result;
             foreach (var projectId in solution.ProjectIds)
             {
@@ -30,6 +31,13 @@ namespace AutoObfuscation
                 foreach (var documentId in project.DocumentIds)
                 {
                     var document = project.GetDocument(documentId);
+
+                    //TODO: check imports
+                    if (document.Name == "SecureFloat")
+                    {
+                        secureFloatExists = true;
+                    }
+
                     document = Obfuscate(document);
                     project = document.Project;
                 }
@@ -38,6 +46,12 @@ namespace AutoObfuscation
             }
 
             Console.WriteLine(workspace.TryApplyChanges(solution));
+
+            if (!secureFloatExists)
+            {
+                //add SecureFloat.cs to project
+                Console.WriteLine("SecureFloat.cs is not in the project [PRESS ENTER]");
+            }
             Console.Read();
 
             /* Replace Method Return Type
@@ -60,7 +74,7 @@ namespace AutoObfuscation
             //MyRewriter rewriter = new MyRewriter();
             //rewriter.Visit(root);
             var firstVariable = root.DescendantNodes().OfType<VariableDeclarationSyntax>().First();
-            var secureFloat = SyntaxFactory.VariableDeclaration(SyntaxFactory.IdentifierName("SecureFloat "), firstVariable.Variables);
+            var secureFloat = SyntaxFactory.VariableDeclaration(SyntaxFactory.IdentifierName("AutoObfuscation.SecureFloat "), firstVariable.Variables);
             var newRoot = root.ReplaceNode(firstVariable, secureFloat);
             document = document.WithText(newRoot.GetText());
 
